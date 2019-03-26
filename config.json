@@ -1,0 +1,24 @@
+{
+  "projectPath": "/Users/neil.kumar/workspace/eigen/frontend/eigen_ui/src/js",
+  "foldersToIgnore": ["design_kit"],
+  "alias": {
+    "Routes": "./src/js/routes",
+    "Help": "./src/help",
+    "Styles": "./src/styles",
+    "Images": "./src/img",
+    "Views": "./src/js/old_views",
+    "Page": "./src/js/views",
+    "Components": "./src/js/old_components",
+    "UI": "./src/js/components",
+    "DesignKit": "./src/js/design_kit",
+    "Helpers": "./src/js/helpers",
+    "Models": "./src/js/models",
+    "Reducers": "./src/js/reducers",
+    "Store": "./src/js/store",
+    "Actions": "./src/js/actions",
+    "Factories": "./test/factories",
+    "Test": "./test",
+    "Schemas": "./test/schemas",
+    "Mocks": "./test/mocks"
+  }
+}
