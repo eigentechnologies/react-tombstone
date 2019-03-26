@@ -1,8 +1,25 @@
 const fs = require('fs');
 const path = require('path');
+const chalk = require('chalk');
+const cliProgress = require('cli-progress');
 
 const { alias, foldersToIgnore } = require('./config.json');
 
+/**
+ * Returns new progress bar
+ * @return {cliProgress.Bar} progress bar
+ */
+function newProgressBar() {
+	const progressBarFormat = {
+		barsize: 60,
+		clearOnComplete: true,
+		hideCursor: true,
+		format: `${chalk.cyan(' {bar}')} ${chalk.yellow(`{percentage}%`)} | ETA: ${chalk.yellow(
+			`{eta_formatted}`
+		)} | ${chalk.yellow('{value}')}/{total}`
+	};
+	return new cliProgress.Bar(progressBarFormat, cliProgress.Presets.shades_classic);
+}
 /**
  * Check if import is used in file
  * @param  {array} filesToCheck file paths to check
@@ -108,4 +125,4 @@ function getParentDir(fullFilePath) {
 	return fullFilePath.split(path.sep).slice(-2)[0];
 }
 
-module.exports = { getJsFilesFromDir, getParentDir, checkIfImportIsUsedInFiles };
+module.exports = { newProgressBar, getJsFilesFromDir, getParentDir, checkIfImportIsUsedInFiles };

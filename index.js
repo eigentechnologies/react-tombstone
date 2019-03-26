@@ -3,11 +3,11 @@ const path = require('path');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 const { projectPath } = require('./config.json');
-const { getJsFilesFromDir, getParentDir, checkIfImportIsUsedInFiles } = require('./helpers');
+const { getJsFilesFromDir, getParentDir, checkIfImportIsUsedInFiles, newProgressBar } = require('./helpers');
 const welcome = fs.readFileSync('./assets/welcome', 'utf8');
 
 console.log(chalk.blue.bold(welcome));
-console.log(chalk.red.bold('press CTRL+C to quit \n'));
+console.log(chalk.red.bold('CTRL+C to quit \n'));
 
 const questions = [
 	{
@@ -22,15 +22,41 @@ const questions = [
 
 inquirer.prompt(questions).then(answers => {
 	if (answers.target_dir_correct) {
-		const jsFilePaths = getJsFilesFromDir(path.join(projectPath));
-		console.log(`${jsFilePaths.length} js files found`);
-
-		const indexFilePaths = jsFilePaths.filter(file => file.endsWith('index.js'));
-		const indexImportsToCheck = indexFilePaths.map(file => getParentDir(file));
-		console.log(`${indexImportsToCheck.length} index files found`);
-
-		const unusedFiles = indexFilePaths.filter(indexPath => !checkIfImportIsUsedInFiles(jsFilePaths, indexPath));
-		console.log(`${unusedFiles.length} unused files found.`);
-		unusedFiles.forEach(file => console.log(`${file}`));
+		executeZombies();
 	}
 });
+
+/**
+ * Get unu
+ */
+function executeZombies() {
+	const unusedFiles = getUnusedImports();
+}
+
+/**
+ * Gets unused components from src directory
+ * @return {array} unused files
+ */
+function getUnusedImports() {
+	const jsFilePaths = getJsFilesFromDir(path.join(projectPath));
+	console.log(`${chalk.green(jsFilePaths.length)} js files found`);
+
+	const indexFilePaths = jsFilePaths.filter(file => file.endsWith('index.js'));
+	const indexImportsToCheck = indexFilePaths.map(file => getParentDir(file));
+	console.log(`${chalk.yellow(indexImportsToCheck.length)} index files found`);
+
+	const progressBar = newProgressBar();
+	progressBar.start(indexImportsToCheck.length, 0);
+
+	const unusedFiles = indexFilePaths.filter(indexPath => {
+		const isNotUsed = !checkIfImportIsUsedInFiles(jsFilePaths, indexPath, progressBar);
+		progressBar.increment();
+		return isNotUsed;
+	});
+
+	progressBar.stop();
+
+	console.log(`${unusedFiles.length} unused files found.`);
+	unusedFiles.forEach(file => console.log(`${chalk.red(file)}`));
+	return unusedFiles;
+}
