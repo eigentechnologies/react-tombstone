@@ -3,7 +3,15 @@ const path = require('path');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 const { projectPath } = require('./config.json');
-const { getJsFilesFromDir, getParentDir, checkIfImportIsUsedInFiles, newProgressBar } = require('./helpers');
+const {
+	getJsFilesFromDir,
+	getFullParentDir,
+	getParentDir,
+	deleteDirectory,
+	checkIfImportIsUsedInFiles,
+	newProgressBar
+} = require('./helpers');
+
 const welcome = fs.readFileSync('./assets/welcome', 'utf8');
 
 console.log(chalk.blue.bold(welcome));
@@ -22,22 +30,25 @@ const questions = [
 
 inquirer.prompt(questions).then(answers => {
 	if (answers.target_dir_correct) {
-		executeZombies();
+		executeZombies(projectPath);
 	}
 });
 
 /**
- * Get unu
+ * Gets unused components, deletes, rinses and repeat
+ * @param {string} projectPath path to project js folder
  */
-function executeZombies() {
-	const unusedFiles = getUnusedImports();
+function executeZombies(projectPath) {
+	const unusedFiles = getUnused(projectPath);
+	unusedFiles.forEach(file => deleteDirectory(getFullParentDir(file)));
 }
 
 /**
  * Gets unused components from src directory
+ * @param {string} projectPath path to project js folder
  * @return {array} unused files
  */
-function getUnusedImports() {
+function getUnused(projectPath) {
 	const jsFilePaths = getJsFilesFromDir(path.join(projectPath));
 	console.log(`${chalk.green(jsFilePaths.length)} js files found`);
 

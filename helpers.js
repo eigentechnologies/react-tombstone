@@ -2,9 +2,18 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const cliProgress = require('cli-progress');
-
+const rimraf = require('rimraf');
 const { alias, foldersToIgnore } = require('./config.json');
 
+/**
+ * Delete directory
+ * @param  {string} dirPath path to dir
+ */
+async function deleteDirectory(dirPath) {
+	return new Promise(resolve => {
+		rimraf(dirPath, () => resolve());
+	});
+}
 /**
  * Returns new progress bar
  * @return {cliProgress.Bar} progress bar
@@ -125,4 +134,21 @@ function getParentDir(fullFilePath) {
 	return fullFilePath.split(path.sep).slice(-2)[0];
 }
 
-module.exports = { newProgressBar, getJsFilesFromDir, getParentDir, checkIfImportIsUsedInFiles };
+/**
+ * Returns parent directory full path
+ * @param  {string} fullFilePath
+ * @return {string} parent dir
+ */
+function getFullParentDir(fullFilePath) {
+	const splitPath = fullFilePath.split(path.sep);
+	return path.join(...splitPath.slice(0, splitPath.length - 1));
+}
+
+module.exports = {
+	getFullParentDir,
+	deleteDirectory,
+	newProgressBar,
+	getJsFilesFromDir,
+	getParentDir,
+	checkIfImportIsUsedInFiles
+};
