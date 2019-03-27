@@ -38,9 +38,21 @@ inquirer.prompt(questions).then(answers => {
  * Gets unused components, deletes, rinses and repeat
  * @param {string} projectPath path to project js folder
  */
-function executeZombies(projectPath) {
+async function executeZombies(projectPath) {
 	const unusedFiles = getUnused(projectPath);
-	unusedFiles.forEach(file => deleteDirectory(getFullParentDir(file)));
+	if (unusedFiles.length > 0) {
+		const deletePromises = unusedFiles.map(file => deleteDirectory(getFullParentDir(file)));
+		const pathsCouldNotDelete = await Promise.all(deletePromises);
+
+		console.log(chalk.bold.red('\nCould not remove the following DIRs as they have child DIRs.\n'));
+		pathsCouldNotDelete.filter(path => path).forEach(path => console.log(chalk.yellow(path)));
+
+		// repeat if all deleted successfully
+		if (pathsCouldNotDelete.length === 0) {
+			console.log(chalk.green('Zombie components removed, searching again...'));
+			executeZombies(projectPath);
+		}
+	}
 }
 
 /**

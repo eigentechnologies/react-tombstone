@@ -11,7 +11,11 @@ const { alias, foldersToIgnore } = require('./config.json');
  */
 async function deleteDirectory(dirPath) {
 	return new Promise(resolve => {
-		rimraf(dirPath, () => resolve());
+		if (doesDirHaveChildDirs(dirPath)) {
+			resolve(dirPath);
+		} else {
+			rimraf(dirPath, () => resolve());
+		}
 	});
 }
 /**
@@ -41,6 +45,7 @@ function checkIfImportIsUsedInFiles(filesToCheck, importPathToCheck) {
 	return filesToCheck.some(file => {
 		const fileString = fs.readFileSync(file, 'utf8');
 		const importsInFile = getImportsFromFile(fileString, file);
+
 		return importsInFile.some(imp => imp.endsWith(`${importNameToCheck}'`));
 	});
 }
@@ -94,11 +99,27 @@ function getNextMatchingImport(stringToCheck, foundImports = []) {
 	if (matches) {
 		const found = matches[0];
 		const nextStringToCheck = stringToCheck.slice(matches.index + found.length);
-		foundImports.push(found);
+
+		const cleanImport = cleanseImport(found);
+		foundImports.push(cleanImport);
 		return getNextMatchingImport(nextStringToCheck, foundImports);
 	} else {
 		return foundImports;
 	}
+}
+
+/**
+ * Returns a clean import string
+ * @param  {string} importName
+ * @return  {string} importName
+ */
+function cleanseImport(importName) {
+	const split = importName.split('/');
+	if (importName.includes('./label_menu/index')) {
+		console.log();
+	}
+	// remove 'import from 'some/file/index.js';
+	return split.slice(-1)[0].includes('index') ? `${split.slice(0, -1).join('/')}'` : importName;
 }
 
 /**
@@ -117,7 +138,7 @@ function getJsFilesFromDir(dir, allPaths = []) {
 
 		if (isDirectory) {
 			getJsFilesFromDir(fullPath, allPaths);
-		} else if (file.endsWith('.js')) {
+		} else if (file.endsWith('.js') && !file.includes('spec')) {
 			allPaths.push(fullPath);
 		}
 	});
@@ -141,7 +162,22 @@ function getParentDir(fullFilePath) {
  */
 function getFullParentDir(fullFilePath) {
 	const splitPath = fullFilePath.split(path.sep);
-	return path.join(...splitPath.slice(0, splitPath.length - 1));
+	return path.sep + path.join(...splitPath.slice(0, splitPath.length - 1));
+}
+
+/**
+ * Returns true if DIR has child DIRs
+ * @param  {string} filePath
+ * @return {bool} has children DIRs or not
+ */
+function doesDirHaveChildDirs(filePath) {
+	const isDirectory = source => fs.lstatSync(source).isDirectory();
+	const dirs = fs
+		.readdirSync(filePath)
+		.map(name => path.join(filePath, name))
+		.filter(isDirectory);
+
+	return dirs.length > 0;
 }
 
 module.exports = {
