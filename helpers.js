@@ -115,9 +115,7 @@ function getNextMatchingImport(stringToCheck, foundImports = []) {
  */
 function cleanseImport(importName) {
 	const split = importName.split('/');
-	if (importName.includes('./label_menu/index')) {
-		console.log();
-	}
+
 	// remove 'import from 'some/file/index.js';
 	return split.slice(-1)[0].includes('index') ? `${split.slice(0, -1).join('/')}'` : importName;
 }
