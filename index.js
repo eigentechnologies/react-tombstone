@@ -20,8 +20,16 @@ console.log(chalk.red.bold('CTRL+C to quit \n'));
 const questions = [
 	{
 		type: 'confirm',
-		name: 'target_dir_correct',
+		name: 'dir_correct_1',
 		message: `Is this file path correct? ${projectPath}`,
+		validate(value) {
+			return value.trim() !== '';
+		}
+	},
+	{
+		type: 'confirm',
+		name: 'dir_correct_2',
+		message: `Are you sure? ${projectPath}`,
 		validate(value) {
 			return value.trim() !== '';
 		}
@@ -29,8 +37,12 @@ const questions = [
 ];
 
 inquirer.prompt(questions).then(answers => {
-	if (answers.target_dir_correct) {
-		executeZombies(projectPath);
+	if (answers.dir_correct_1 && answers.dir_correct_2) {
+		if (fs.existsSync(projectPath)) {
+			executeZombies(projectPath);
+		} else {
+			console.log(chalk.bold.red('Project path does not exist, please check the path in `config.json`'));
+		}
 	}
 });
 
