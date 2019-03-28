@@ -104,3 +104,7 @@ For example:
         ├── other_component_folder/
         ├── and_another_component_folder/
         └── index.js
+
+# Next Steps
+
+- add tests
